@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>جمرة: يوم في العمل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF6EF; --ink:#2B2620; --muted:#6F665C; --line:#E4DACD;
+    --ember:#E8590C; --ember-soft:#FDE6D6; --good:#2F8F5B; --mid:#B7791F; --bad:#C2410C;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Tajawal",Tahoma,sans-serif;-webkit-tap-highlight-color:transparent}
+  .app{max-width:480px;margin:0 auto;padding:12px 12px 24px}
+  header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  header h1{font-size:20px;font-weight:800;margin:0;flex:1}
+  header h1 small{display:block;font-size:13px;font-weight:500;color:var(--muted)}
+  .meter{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+  .meter-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px}
+  .meter-top b{font-size:15px}
+  .bar{height:12px;background:#EEE6DC;border-radius:999px;overflow:hidden}
+  .fill{height:100%;width:50%;border-radius:999px;background:linear-gradient(90deg,#F59E0B,var(--ember));transition:width .6s ease}
+  .progress{font-size:13px;color:var(--muted);margin-top:6px}
+  .flame{width:30px;height:36px;transition:opacity .6s, transform .6s}
+
+  /* office map */
+  .map{position:relative;width:100%;aspect-ratio:360/560;background:#E9E1D5;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+  .room{position:absolute;border-radius:12px;border:1px solid rgba(0,0,0,.06)}
+  .room span{position:absolute;top:6px;right:8px;font-size:11px;font-weight:700;color:rgba(43,38,32,.55)}
+  .deco{position:absolute;border-radius:6px;background:rgba(0,0,0,.07)}
+  .plant{position:absolute;width:16px;height:16px;border-radius:50%;background:#8CC48A}
+  .person{position:absolute;transform:translate(-50%,-50%);background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;font-family:inherit;z-index:2}
+  .person svg{width:38px;height:46px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.12));transition:transform .2s}
+  .person:hover svg,.person:focus-visible svg{transform:translateY(-3px)}
+  .person:focus-visible{outline:2px solid var(--ember);outline-offset:3px;border-radius:8px}
+  .nm{font-size:12px;font-weight:700;background:#fff;border-radius:999px;padding:1px 8px;margin-top:-2px;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+  .person.done .nm{background:#E7F4EC;color:var(--good)}
+  .person.done svg{opacity:.7}
+  .person.guide .nm{background:var(--ember);color:#fff}
+  .ping{position:absolute;top:-4px;left:-2px;width:12px;height:12px;border-radius:50%;background:var(--ember);box-shadow:0 0 0 0 rgba(232,89,12,.6);animation:ping 1.6s infinite}
+  .person.done .ping{display:none}
+  @keyframes ping{0%{box-shadow:0 0 0 0 rgba(232,89,12,.55)}80%,100%{box-shadow:0 0 0 10px rgba(232,89,12,0)}}
+  .player{position:absolute;transform:translate(-50%,-50%);z-index:3;transition:left .7s ease, top .7s ease;pointer-events:none;display:flex;flex-direction:column;align-items:center}
+  .player .dot{width:22px;height:22px;border-radius:50%;background:var(--ember);border:3px solid #fff;box-shadow:0 0 0 2px var(--ember),0 3px 6px rgba(0,0,0,.2)}
+  .player .you{font-size:11px;font-weight:800;color:var(--ember);margin-top:2px;background:#fff;border-radius:999px;padding:0 6px}
+  .hint{font-size:13px;color:var(--muted);text-align:center;margin-top:8px}
+
+  /* sheet */
+  .backdrop{position:fixed;inset:0;background:rgba(30,24,18,.45);opacity:0;pointer-events:none;transition:opacity .25s;z-index:10}
+  .backdrop.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:100%;max-width:480px;max-height:88vh;overflow:auto;background:#fff;border-radius:22px 22px 0 0;padding:18px 18px 22px;z-index:11;transition:transform .3s ease}
+  .sheet.on{transform:translate(-50%,0)}
+  .who{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .who svg{width:46px;height:56px}
+  .who h2{margin:0;font-size:19px}
+  .who p{margin:0;font-size:13px;color:var(--muted)}
+  .quote{background:var(--bg);border-radius:14px;padding:12px 14px;font-size:16px;line-height:1.7;margin:0 0 12px}
+  .ask{font-weight:700;font-size:15px;margin:0 0 8px}
+  .opt{display:block;width:100%;text-align:right;font-family:inherit;font-size:15px;line-height:1.5;padding:12px 14px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);cursor:pointer}
+  .opt:hover:not(:disabled){border-color:var(--ember)}
+  .opt:disabled{cursor:default;opacity:.55}
+  .opt.picked{opacity:1;border-color:var(--ink);background:#FAF7F2}
+  .opt.best{opacity:1;border-color:var(--good);background:#EEF8F2}
+  .fb{border-radius:14px;padding:12px 14px;margin:6px 0 12px;font-size:15px;line-height:1.7}
+  .fb.good{background:#EEF8F2}.fb.mid{background:#FDF4E3}.fb.bad{background:#FDECE3}
+  .fb b{display:block;margin-bottom:2px}
+  .tip{display:flex;gap:8px;align-items:flex-start;font-size:15px;line-height:1.7}
+  .btn{display:block;width:100%;font-family:inherit;font-size:16px;font-weight:700;padding:13px;border:0;border-radius:12px;background:var(--ember);color:#fff;cursor:pointer}
+  .btn.ghost{background:#F3EDE5;color:var(--ink);margin-top:8px}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px}
+
+  /* end */
+  .end h2{font-size:22px;margin:4px 0 6px;text-align:center}
+  .end .big{display:flex;justify-content:center;margin:6px 0}
+  .end .big svg{width:70px;height:84px}
+  .end p.lead{text-align:center;font-size:15px;line-height:1.7;margin:0 0 14px;color:var(--ink)}
+  .end h3{font-size:16px;margin:14px 0 8px}
+  .end ol{margin:0;padding-right:20px;font-size:15px;line-height:1.8}
+  @media (prefers-reduced-motion:reduce){.player,.fill,.sheet,.backdrop{transition:none}.ping{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <svg class="flame" id="flameTop" viewBox="0 0 30 36" aria-hidden="true"><path d="M15 2C17 10 26 13 26 23a11 11 0 0 1-22 0c0-6 4-8 5-13 2 3 3 5 3 7 2-4 4-9 4-15Z" fill="#E8590C"/><path d="M15 18c1 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 3-7 1 1 2 2 2 3 1-2 1-4 1-6Z" fill="#FBBF24"/></svg>
+    <h1>جمرة: يوم في العمل<small>تجوّل في المكتب وتكلّم مع زملائك</small></h1>
+  </header>
+
+  <div class="meter" aria-live="polite">
+    <div class="meter-top"><span>عدّاد الجمرة (طاقتك)</span><b id="val">٥٠٪</b></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <div class="progress" id="prog">تحدّثت مع ٠ من ١٠</div>
+  </div>
+
+  <div class="map" id="map">
+    <div class="room" style="left:2.8%;top:1.8%;width:44.4%;height:23.2%;background:#DCEFD5"><span>الحديقة</span></div>
+    <div class="room" style="left:52.8%;top:1.8%;width:44.4%;height:23.2%;background:#E5E9F6"><span>غرفة الاجتماعات</span></div>
+    <div class="room" style="left:2.8%;top:28.6%;width:30.6%;height:25%;background:#F8E5D2"><span>الاستراحة</span></div>
+    <div class="room" style="left:36.1%;top:28.6%;width:27.8%;height:12.5%;background:#EEDFCF"><span style="right:auto;left:8px">القهوة</span></div>
+    <div class="room" style="left:66.7%;top:28.6%;width:30.6%;height:12.5%;background:#DCEDF6"><span style="right:auto;left:8px">النافذة</span></div>
+    <div class="room" style="left:36.1%;top:44.6%;width:61.1%;height:23.3%;background:#F5F2EC"><span>المكتب المفتوح</span></div>
+    <div class="room" style="left:2.8%;top:56.8%;width:30.6%;height:11.1%;background:#ECE8F3"><span style="right:auto;left:8px">الطابعة</span></div>
+    <div class="room" style="left:2.8%;top:71.4%;width:44.4%;height:26.8%;background:#F1EBE1"><span>الردهة</span></div>
+    <div class="room" style="left:52.8%;top:71.4%;width:44.4%;height:26.8%;background:#FBE5D3"><span>الاستقبال</span></div>
+    <!-- decor -->
+    <div class="plant" style="left:8%;top:17%"></div><div class="plant" style="left:38%;top:6%"></div><div class="plant" style="left:40%;top:18%;background:#A7D3A0"></div>
+    <div class="deco" style="left:62%;top:10%;width:26%;height:6%;border-radius:20px"></div>
+    <div class="deco" style="left:8%;top:44%;width:18%;height:5%"></div>
+    <div class="deco" style="left:44%;top:31.5%;width:8%;height:3%"></div>
+    <div class="deco" style="left:70%;top:39.2%;width:24%;height:1.2%;background:#9FC9E0"></div>
+    <div class="deco" style="left:40%;top:60%;width:14%;height:4%"></div><div class="deco" style="left:62%;top:60%;width:14%;height:4%"></div>
+    <div class="deco" style="left:8%;top:62.5%;width:10%;height:3.5%"></div>
+    <div class="deco" style="left:60%;top:91%;width:30%;height:4%"></div>
+    <div class="plant" style="left:7%;top:91%"></div>
+    <div class="player" id="player"><div class="dot"></div><div class="you">أنت</div></div>
+  </div>
+  <p class="hint">اضغط على أي زميل لتمشي إليه وتسمع موقفه.</p>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div>
+
+<script>
+const crew = [
+  {id:'siraj', name:'سراج', g:'m', color:'#E8590C', place:'الاستقبال', x:75, y:81, guide:true},
+  {id:'ali', name:'علي', g:'m', color:'#3B6FB6', place:'مكتبه في المكتب المفتوح', x:47, y:54,
+   line:'صار لي شهر أطلع من الدوام متأخر كل يوم، واليوم المدير طلب مني مهمة جديدة.',
+   options:[['أقبلها وأسهر عليها مثل كل يوم.',-10],['أوضّح للمدير مهامي الحالية وأطلب نرتّب الأولويات.',10],['أقبلها وأشتكي لزملائي بعدين.',-5]],
+   tip:'العمل الإضافي اليومي يستنزف الطاقة بهدوء. ترتيب الأولويات مع المدير أفضل من السهر الدائم.'},
+  {id:'hanouf', name:'هنوف', g:'f', color:'#9B5DE5', hijab:'#4A3B5C', place:'غرفة الاستراحة', x:18, y:37,
+   line:'كل ما أخذت استراحة أحس بالذنب، كأني مقصّرة في شغلي.',
+   options:[['أختصر الاستراحة وأرجع للمكتب بسرعة.',-5],['أتغدى على مكتبي عشان أخلّص أكثر.',-10],['آخذ استراحتي كاملة، لأنها جزء من الشغل.',10]],
+   tip:'الاستراحة ليست تقصيرًا، بل هي ما يجعلك قادرًا على الاستمرار.'},
+  {id:'faiza', name:'فايزه', g:'f', color:'#D97706', hijab:'#5C4033', place:'عند آلة القهوة', x:56, y:36,
+   line:'رجعت من الإجازة وأنا تعبانة كأني ما ارتحت أبدًا، وصرت أعتمد على القهوة عشان أكمّل.',
+   options:[['أزيد القهوة وأكمّل عادي.',-10],['أنتبه إن التعب صار مستمر، وأتكلم مع شخص أثق فيه.',10],['أتجاهل الموضوع، أكيد بيروح لحاله.',-5]],
+   tip:'التعب الذي لا يزول بالراحة إشارة تستحق الانتباه، لا التجاهل.'},
+  {id:'jouri', name:'جوري', g:'f', color:'#E11D74', hijab:'#2B2B3C', place:'غرفة الاجتماعات', x:75, y:15,
+   line:'عندنا تسليم يوم الخميس وأنا متوترة، بس بعد التسليم الضغط بيخف.',
+   options:[['أقسّم المهمة لخطوات صغيرة، وأرتاح بعد التسليم.',10],['أشتغل بدون توقف لين الخميس.',-5],['أأجّل كل شي لآخر يوم.',-10]],
+   tip:'الضغط المؤقت قبل موعد التسليم أمر طبيعي. يصبح مقلقًا عندما يستمر ولا ينتهي.'},
+  {id:'sara', name:'ساره', g:'f', color:'#0E9F9A', hijab:'#1F3B3A', place:'مكتب الزاوية', x:89, y:56,
+   line:'صرت أتجنّب الفريق، وما عاد يهمني وش يصير في الشغل.',
+   options:[['أبتعد أكثر، أريح لي.',-10],['أكلّم زميلة أثق فيها عن شعوري.',10],['أحضر الاجتماعات بس ما أشارك.',-5]],
+   tip:'الانعزال واللامبالاة من علامات الاحتراق. التواصل مع شخص تثق به خطوة أولى للخروج منها.'},
+  {id:'saad', name:'سعد', g:'m', color:'#6B7280', place:'عند الطابعة', x:22, y:62,
+   line:'عندي مهام كثيرة وكلها مستعجلة، وما أدري من وين أبدأ.',
+   options:[['أحاول أسوّيها كلها بنفس الوقت.',-10],['أأجّلها كلها لين أرتاح.',-5],['أرتّبها حسب الأهمية وأطلب مساعدة في بعضها.',10]],
+   tip:'ترتيب المهام وطلب المساعدة يخففان الحِمل بدل أن تحمله وحدك.'},
+  {id:'turki', name:'تركي', g:'m', color:'#15803D', place:'الردهة', x:25, y:81,
+   line:'تجيني رسايل شغل بالليل وفي الإجازة، وأرد عليها فورًا.',
+   options:[['أرد فورًا على كل رسالة.',-10],['أحدد وقت لنهاية دوامي، واللي بعده أرد عليه ثاني يوم.',10],['أشوفها بس ما أرد، وأظل أفكر فيها طول الليل.',-5]],
+   tip:'وضع حدود واضحة لساعات العمل يحمي وقت راحتك.'},
+  {id:'rakan', name:'راكان', g:'m', color:'#B45309', place:'المكتب المفتوح', x:68, y:54,
+   line:'ما أحب أطلب مساعدة، أحس إنها ضعف.',
+   options:[['أكمّل لحالي حتى لو تأخرت.',-5],['أطلب من زميل يساعدني في جزء من الشغل.',10],['أسهر عشان ما أحد يلاحظ إني متأخر.',-10]],
+   tip:'طلب المساعدة مهارة، وليس ضعفًا.'},
+  {id:'mohammed', name:'محمد', g:'m', color:'#1D4ED8', place:'عند النافذة', x:87, y:35,
+   line:'أشتغل كثير، بس أحس إن شغلي ما له قيمة ولا أحد يلاحظه.',
+   options:[['أقلّل جهدي، ما فيه فايدة.',-5],['أشتغل أكثر عشان يلاحظوني.',-10],['أطلب ملاحظات من مديري، وأتذكر إنجازاتي.',10]],
+   tip:'الشعور بأن العمل بلا قيمة من علامات الاحتراق. الحديث عنه يساعدك ترى الصورة كاملة.'},
+  {id:'roaa', name:'رؤى', g:'f', color:'#65A30D', hijab:'#3F4A2A', place:'الحديقة', x:25, y:13,
+   line:'كنت مستنزفة، بس تعلّمت أقول "لا" وأحدد وقتي. برأيك وش أهم خطوة؟',
+   options:[['أقول "نعم" لكل طلب عشان أرضي الكل.',-10],['أعرف حدودي، وأوضّحها بلطف.',10],['أنتظر لين أتعب مرة، بعدين أتصرف.',-5]],
+   tip:'الحدود الواضحة تحمي طاقتك قبل أن تنفد.'}
+];
+const people = crew.filter(c=>!c.guide);
+const general = ['خذ استراحاتك كاملة، فهي جزء من العمل.','حدّد وقتًا واضحًا لنهاية يومك.','تكلّم مع شخص تثق به عندما يطول التعب.'];
+let ember = 50, busy = false;
+const picks = {};
+const ar = n => n.toLocaleString('ar-EG');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function fig(c){
+  const skin='#E8C29E';
+  if(c.g==='f') return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="7" y="30" width="26" height="17" rx="9" fill="${c.color}"/><path d="M20 3C10 3 7 12 8 21c1 8 6 12 12 12s11-4 12-12c1-9-2-18-12-18Z" fill="${c.hijab}"/><circle cx="20" cy="18" r="7.5" fill="${skin}"/><circle cx="17.3" cy="17.5" r="1" fill="#2B2620"/><circle cx="22.7" cy="17.5" r="1" fill="#2B2620"/><path d="M18 21.2q2 1.4 4 0" stroke="#2B2620" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`;
+  return `<svg viewBox="0 0 40 48" aria-hidden="true"><rect x="7" y="30" width="26" height="17" rx="9" fill="${c.color}"/><path d="M8 28L11 12C12 6 28 6 29 12L32 28L26 23H14Z" fill="#fff" stroke="#D9D2C7"/><circle cx="20" cy="18" r="7.5" fill="${skin}"/><rect x="11.5" y="8" width="17" height="3" rx="1.5" fill="#2B2620"/><circle cx="17.3" cy="17.5" r="1" fill="#2B2620"/><circle cx="22.7" cy="17.5" r="1" fill="#2B2620"/><path d="M18 21.2q2 1.4 4 0" stroke="#2B2620" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`;
+}
+function flame(size){
+  return `<svg viewBox="0 0 30 36" aria-hidden="true"><path d="M15 2C17 10 26 13 26 23a11 11 0 0 1-22 0c0-6 4-8 5-13 2 3 3 5 3 7 2-4 4-9 4-15Z" fill="#E8590C"/><path d="M15 18c1 4 6 5 6 10a6 6 0 0 1-12 0c0-3 2-4 3-7 1 1 2 2 2 3 1-2 1-4 1-6Z" fill="#FBBF24"/></svg>`;
+}
+
+const map = document.getElementById('map');
+const player = document.getElementById('player');
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+
+crew.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='person'+(c.guide?' guide':'');
+  b.style.left=c.x+'%'; b.style.top=c.y+'%';
+  b.setAttribute('aria-label', c.guide ? 'سراج، المرشد' : `${c.name}، ${c.place}`);
+  b.innerHTML=fig(c)+(c.guide?'':'<i class="ping"></i>')+`<span class="nm">${c.name}</span>`;
+  b.onclick=()=>walkTo(c);
+  map.appendChild(b); c.el=b;
+});
+placePlayer(64, 90);
+
+function placePlayer(x,y){ player.style.left=x+'%'; player.style.top=y+'%'; }
+function walkTo(c){
+  if(busy) return; busy=true;
+  const dx = c.x>50 ? -11 : 11;
+  placePlayer(c.x+dx, c.y+3);
+  setTimeout(()=>{ busy=false; c.guide ? openGuide() : openPerson(c); }, reduce?0:720);
+}
+function updateMeter(){
+  document.getElementById('val').textContent = ar(ember)+'٪';
+  document.getElementById('fill').style.width = ember+'%';
+  const f=document.getElementById('flameTop');
+  f.style.opacity = .35 + ember/100*.65;
+  f.style.transform = `scale(${.8+ember/250})`;
+  document.getElementById('prog').textContent = `تحدّثت مع ${ar(Object.keys(picks).length)} من ${ar(people.length)}`;
+}
+function show(html){ sheet.innerHTML=html; sheet.classList.add('on'); backdrop.classList.add('on'); sheet.scrollTop=0; const f=sheet.querySelector('button'); if(f) f.focus({preventScroll:true}); }
+function hide(){ sheet.classList.remove('on'); backdrop.classList.remove('on'); }
+backdrop.onclick=()=>{ if(!sheet.dataset.lock) hide(); };
+
+function openGuide(first){
+  const done=Object.keys(picks).length;
+  let body;
+  if(first){
+    body=`<p class="quote">أهلًا! أنا سراج، مرشدك اليوم. تجوّل في المكتب وتكلّم مع زملائك العشرة. كل واحد عنده موقف، واختر وش بتسوّي لو كنت مكانه.<br><br>اختياراتك تأثّر على <b>عدّاد الجمرة</b>: هو طاقتك في العمل. بعض الاختيارات تحميها، وبعضها يستنزفها.</p>
+    <button class="btn" onclick="hide()">يلا نبدأ</button>
+    <p class="note">هذه اللعبة ليست أداة طبية أو علمية، هي فقط تعطيك صورة عن قد إيش أنت قريب أو بعيد عن الاحتراق الوظيفي.</p>`;
+  } else if(done<people.length){
+    body=`<p class="quote">تحدّثت مع ${ar(done)} من ${ar(people.length)}. باقي زملاء ينتظرونك، دوّر على النقاط البرتقالية في المكتب.</p><button class="btn" onclick="hide()">أكمل الجولة</button>`;
+  } else {
+    body=`<p class="quote">خلّصت جولتك! تعال نشوف وين وصلت جمرتك.</p><button class="btn" onclick="openEnd()">شوف النتيجة</button>`;
+  }
+  show(`<div class="who">${fig(crew[0])}<div><h2 id="sheetTitle">سراج</h2><p>المرشد · الاستقبال</p></div></div>${body}`);
+}
+
+function openPerson(c){
+  const head=`<div class="who">${fig(c)}<div><h2 id="sheetTitle">${c.name}</h2><p>${c.place}</p></div></div><p class="quote">${c.line}</p>`;
+  if(picks[c.id]!==undefined){ show(head+feedback(c,picks[c.id])+`<button class="btn" onclick="hide()">رجوع للمكتب</button>`); markOpts(c); return; }
+  const opts=c.options.map((o,i)=>`<button class="opt" data-i="${i}" onclick="choose('${c.id}',${i})">${o[0]}</button>`).join('');
+  show(head+`<p class="ask">لو كنت مكان ${c.name}، وش بتسوّي؟</p><div id="opts">${opts}</div><div id="after"></div>`);
+}
+function feedback(c,i){
+  const d=c.options[i][1];
+  const k = d>0?'good':(d===-5?'mid':'bad');
+  const title = d>0?'اختيار يحمي طاقتك':(d===-5?'ممكن أفضل':'هذا يستنزف طاقتك');
+  const delta = (d>0?'+':'−')+ar(Math.abs(d));
+  const best = c.options.find(o=>o[1]>0)[0];
+  return `<div id="opts">${c.options.map((o,j)=>`<button class="opt" data-i="${j}" disabled>${o[0]}</button>`).join('')}</div>
+  <div class="fb ${k}"><b>${title} (${delta} للجمرة)</b>${d>0?'':`الأفضل: ${best}<br>`}<span class="tip">${c.tip}</span></div>`;
+}
+function markOpts(c){
+  const i=picks[c.id];
+  sheet.querySelectorAll('.opt').forEach(b=>{
+    const j=+b.dataset.i;
+    if(c.options[j][1]>0) b.classList.add('best');
+    if(j===i) b.classList.add('picked');
+  });
+}
+function choose(id,i){
+  const c=people.find(p=>p.id===id);
+  if(picks[id]!==undefined) return;
+  picks[id]=i;
+  ember=Math.max(0,Math.min(100,ember+c.options[i][1]));
+  updateMeter();
+  c.el.classList.add('done');
+  const last = Object.keys(picks).length===people.length;
+  const wrap=document.createElement('div');
+  wrap.innerHTML=feedback(c,i);
+  document.getElementById('opts').replaceWith(wrap.firstElementChild);
+  document.getElementById('after').innerHTML = wrap.querySelector('.fb').outerHTML +
+    (last?`<button class="btn" onclick="openGuide()">ارجع لسراج</button>`:`<button class="btn" onclick="hide()">متابعة</button>`);
+  markOpts(c);
+  document.getElementById('after').querySelector('.btn').focus({preventScroll:true});
+}
+
+function openEnd(){
+  let t,l;
+  if(ember>=50){t='جمرتك متّقدة';l='احتمالية أنك تواجه الاحتراق الوظيفي <b>قليلة</b>، اعتمادًا على خياراتك معنا.';}
+  else {t='جمرتك منطفئة';l='احتمالية أنك تواجه الاحتراق الوظيفي <b>كبيرة</b>، اعتمادًا على خياراتك معنا.';}
+  const tips=people.filter(p=>p.options[picks[p.id]][1]<=0).sort((a,b)=>p2(a)-p2(b)).map(p=>p.tip);
+  function p2(p){return p.options[picks[p.id]][1];}
+  for(const g of general){ if(tips.length>=3) break; tips.push(g); }
+  const scale=.6+ember/100*.6;
+  sheet.dataset.lock='1';
+  show(`<div class="end"><div class="big" style="opacity:${.35+ember/100*.65};transform:scale(${scale})">${flame()}</div>
+    <h2 id="sheetTitle">${t}</h2>
+    <p class="lead">عدّاد الجمرة: <b>${ar(ember)}٪</b><br>${l}</p>
+    <h3>ثلاث خطوات لك</h3><ol>${tips.slice(0,3).map(x=>`<li>${x}</li>`).join('')}</ol>
+    <button class="btn" style="margin-top:16px" onclick="restart()">العب مرة ثانية</button>
+    <p class="note">هذه اللعبة ليست أداة طبية أو علمية، هي فقط تعطيك صورة عن قد إيش أنت قريب أو بعيد عن الاحتراق الوظيفي.</p></div>`);
+}
+function restart(){
+  for(const k in picks) delete picks[k];
+  ember=50; people.forEach(p=>p.el.classList.remove('done'));
+  delete sheet.dataset.lock; updateMeter(); placePlayer(64,90); hide();
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !sheet.dataset.lock) hide(); });
+updateMeter();
+setTimeout(()=>openGuide(true), 250);
+</script>
+</body>
+</html>
